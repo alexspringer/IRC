@@ -51,7 +51,7 @@ class Chat extends React.Component {
       <Container>
             <Card>
               <CardBody>
-                <CardTitle className="text-center">Chat</CardTitle>
+                <CardTitle className="text-center">{this.props.test}Chat</CardTitle>
                 <div className="messages">
                   {this.state.messages.map(message => {
                     return <div>{message.author}: {message.message}</div>;
