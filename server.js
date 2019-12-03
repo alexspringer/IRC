@@ -16,10 +16,13 @@ const io = socketIO(server)
 users = {}
 
 io.on('connection', socket => {
-  console.log('New client connected')
+  console.log('New client connected');
+  Object.keys(users).forEach(function(item){
+
+        socket.broadcast.emit('update-active', users[item]);
+  })
   
   socket.on('new-user', (name) => {
-      console.log(name);
       users[socket.id] = name;
       socket.broadcast.emit('user-connected', name);
   })
@@ -27,6 +30,7 @@ io.on('connection', socket => {
   socket.on('disconnect', () => {
     console.log('user disconnected')
     socket.broadcast.emit('user-disconnected', users[socket.id]);
+    delete users[socket.id];
   })
 })
 

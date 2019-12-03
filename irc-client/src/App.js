@@ -15,9 +15,30 @@ class App extends Component {
     messageContainer.append(newMessage);
   }
 
+  //Appends a user to the list of active users.
+  appendUser(user){
+    if(document.getElementById(user) != null){
+      return; //This user is already an active user.
+    }
+    const userContainer = document.getElementById("user-container");
+    const newUser = document.createElement('div');
+    newUser.innerText = user;
+    newUser.id = user; //set the id to the user so we can easily remove when the user dc
+    userContainer.append(newUser);
+  }
+
+  //When a user disconnect, we emit the user who disconencted to the client.
+  //We use that information to remove the user from the list of active users.
+  removeUser(user){
+    const userContainer = document.getElementById("user-container");
+    const userToRemove = document.getElementById(user);
+    const throwAway = userContainer.removeChild(userToRemove);
+  }
+
   newUser(socket){
     const name = prompt("Enter your name please:");
-    this.appendMessage("You joined!")
+    this.appendMessage("You joined!");
+    this.appendUser(name);
     socket.emit('new-user', name);
   }
 
@@ -25,17 +46,25 @@ class App extends Component {
     const { endpoint } = this.state;
     const socket = socketIOClient(endpoint);
     this.newUser(socket);
+
     socket.on('user-connected', name =>{
       this.appendMessage(`${name} connected.`);
     });
+
+    socket.on('update-active', user => {
+      console.log(user);
+      this.appendUser(user);
+    })
     socket.on('user-disconnected', name =>{
       this.appendMessage(`${name} disconnected.`);
+      this.removeUser(name);
     });
   }
   render() {
     return (
       <div>
         <div id="message-container"></div>
+        <div id="user-container"></div>
       </div>
     );
   }
