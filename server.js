@@ -13,35 +13,49 @@ const server = http.createServer(app);
 // This creates our socket using the instance of the server
 const io = socketIO(server);
 
-//users = {};
-rooms = {}
+
+users = {};
+rooms = {};
+//room = {name: '', users}
+//rooms
 
 io.on("connection", socket => {
   console.log("New client connected");
   var userList = Object.values(users);
   socket.emit("active-users", userList);
+  var roomNameList= Object.entries(rooms);
+  console.log(roomNameList);
 
   socket.on("new-user", data => {
     socket.join(data.room);
     rooms[data.room].users[socket.id] = data.name;
-    console.log(rooms);
     socket.to(data.room).broadcast.emit("user-connected", data.name);
   });
 
-  socket.on("send-message", message =>{
-    socket.broadcast.emit("chat-message", {name: users[socket.id], message: message});
+  socket.on("send-message", data =>{
+    socket.to(data.room).broadcast.emit("chat-message", {name: rooms[data.room].users[socket.id], message: data.message});
   })
 
   socket.on("send-room", room =>{
-    rooms[socket.id] = room;
+    rooms[room] = {users:{}};
     socket.broadcast.emit("new-room", room);
   })
 
   socket.on("disconnect", () => {
     console.log("user disconnected");
-    socket.broadcast.emit("user-disconnected", users[socket.id]);
-    delete users[socket.id];
+    getRooms(socket).forEach(room =>{
+
+    socket.to(room).broadcast.emit("user-disconnected", rooms[room].users[socket.id]);
+    delete rooms[room].users[socket.id];
+    })
   });
 });
+
+function getRooms(socket){
+  return Object.entries(rooms).reduce((names, [name, room]) =>{
+    if(room.users[socket.id] != null) names.push(name);
+    return names;
+  },[]);
+}
 
 server.listen(port, () => console.log(`Listening on port ${port}`));

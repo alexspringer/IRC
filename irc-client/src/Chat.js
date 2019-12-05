@@ -27,7 +27,7 @@ class Chat extends Component {
     var message = messageInput.value;
     this.appendMessage(`You: ${message}`);
     messageInput.value = "";
-    this.state.socket.emit("send-message", message);
+    this.state.socket.emit("send-message", {room:this.state.room, message:message});
   }
 
   appendMessage(message) {
@@ -70,12 +70,6 @@ class Chat extends Component {
     roomContainer.append(roomRemove);
   }
 
-  /*removeRoom(){
-    var id = roomRemove.id;
-    var roomToRemove = document.getElementById(id);
-    roomToRemove.remove();
-  }*/
-
   //When a user disconnect, we emit the user who disconencted to the client.
   //We use that information to remove the user from the list of active users.
   removeUser(user) {
@@ -115,6 +109,7 @@ class Chat extends Component {
   componentDidMount() {
     var room = window.location.pathname;
     room = room.substr(1);
+    this.setState({room: room});
 
     document.getElementById("room").style.display = "none"
 
