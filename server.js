@@ -13,16 +13,19 @@ const server = http.createServer(app);
 // This creates our socket using the instance of the server
 const io = socketIO(server);
 
-users = {};
+//users = {};
+rooms = {}
 
 io.on("connection", socket => {
   console.log("New client connected");
   var userList = Object.values(users);
   socket.emit("active-users", userList);
 
-  socket.on("new-user", name => {
-    users[socket.id] = name;
-    socket.broadcast.emit("user-connected", name);
+  socket.on("new-user", data => {
+    socket.join(data.room);
+    rooms[data.room].users[socket.id] = data.name;
+    console.log(rooms);
+    socket.to(data.room).broadcast.emit("user-connected", data.name);
   });
 
   socket.on("send-message", message =>{
@@ -30,6 +33,7 @@ io.on("connection", socket => {
   })
 
   socket.on("send-room", room =>{
+    rooms[socket.id] = room;
     socket.broadcast.emit("new-room", room);
   })
 
