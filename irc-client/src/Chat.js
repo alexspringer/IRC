@@ -2,12 +2,12 @@ import React, { Component } from "react";
 import socketIOClient from "socket.io-client";
 import "bootstrap/dist/css/bootstrap.min.css";
 import {
-    BrowserRouter as Router,
-    Switch,
-    Route,
-    Link,
-    useParams
-  } from "react-router-dom";
+  BrowserRouter as Router,
+  Switch,
+  Route,
+  Link,
+  useParams
+} from "react-router-dom";
 
 class Chat extends Component {
   constructor() {
@@ -15,10 +15,9 @@ class Chat extends Component {
     this.state = {
       name: "",
       socket: socketIOClient("http://localhost:4001"),
-      room: '',
+      room: ""
     };
     this.handleSubmit = this.handleSubmit.bind(this);
-    this.handleNewRoom = this.handleNewRoom.bind(this);
   }
 
   handleSubmit(event) {
@@ -27,7 +26,10 @@ class Chat extends Component {
     var message = messageInput.value;
     this.appendMessage(`You: ${message}`);
     messageInput.value = "";
-    this.state.socket.emit("send-message", {room:this.state.room, message:message});
+    this.state.socket.emit("send-message", {
+      room: this.state.room,
+      message: message
+    });
   }
 
   appendMessage(message) {
@@ -49,29 +51,6 @@ class Chat extends Component {
     userContainer.append(newUser);
   }
 
-  appendRoom(roomName) {
-    if(document.getElementById(roomName)) return;
-    const roomContainer = document.getElementById("room-container");
-    const newRoom = document.createElement("div");
-    const roomLink = document.createElement("a");
-    const roomRemove = document.createElement("button");
-    
-    roomRemove.innerText="X";
-    roomRemove.id=roomName;
-    //roomRemove.onclick=removeRoom(roomRemove.id);
-
-    newRoom.innerText = roomName;
-    newRoom.id = roomName;
-
-    roomLink.href=`/${roomName}`
-    roomLink.append(newRoom);
-
-    roomContainer.append(roomLink);
-    roomContainer.append(roomRemove);
-  }
-
-  //When a user disconnect, we emit the user who disconencted to the client.
-  //We use that information to remove the user from the list of active users.
   removeUser(user) {
     const userContainer = document.getElementById("user-container");
     const userToRemove = document.getElementById(user);
@@ -84,17 +63,17 @@ class Chat extends Component {
     this.setState({ name: name });
     this.appendMessage("You joined!");
     this.appendUser(name);
-    this.state.socket.on("active-users", userList => {
-      console.log(userList);
-      if (userList) {
-        let i = 0;
-        for (i = 0; i < userList.length; i++) {
-          this.appendUser(userList[i]);
-        }
+    this.state.socket.on("active-users", rooms => {
+      var currentRooms = rooms[this.state.room].users;
+      var singleRoom = Object.values(currentRooms);
+      var activeUsers = Object.values(singleRoom);
+      let i = 0;
+      for (i = 0; i < activeUsers.length; i++) {
+        this.appendUser(activeUsers[i]);
       }
     });
 
-    this.state.socket.emit("new-user", {name: name, room: room});
+    this.state.socket.emit("new-user", { name: name, room: room });
   }
 
   handleNewRoom(event) {
@@ -109,9 +88,9 @@ class Chat extends Component {
   componentDidMount() {
     var room = window.location.pathname;
     room = room.substr(1);
-    this.setState({room: room});
+    this.setState({ room: room });
 
-    document.getElementById("room").style.display = "none"
+    document.getElementById("room").style.display = "none";
 
     this.newUser(room);
 
@@ -119,9 +98,9 @@ class Chat extends Component {
       this.appendMessage(`${data.name}: ${data.message}`);
     });
 
-    this.state.socket.on("new-room", room =>{
+    this.state.socket.on("new-room", room => {
       this.appendRoom(room);
-    })
+    });
 
     this.state.socket.on("user-connected", name => {
       this.appendMessage(`${name} connected.`);
@@ -137,23 +116,7 @@ class Chat extends Component {
     return (
       <div class="container">
         <div class="row justify-content-center">
-          <div class="col-3">
-            <h6>Room Container</h6>
-            <div id="room-container"></div>
-            <form onSubmit={this.handleNewRoom}>
-              <div class="input-group">
-                <input
-                  class="form-control"
-                  type="text"
-                  id="room-input"
-                  name="room-input"
-                />
-                <div class="input-group-append">
-                  <button type="submit">Create</button>
-                </div>
-              </div>
-            </form>
-          </div>
+          <div class="col-3"></div>
           <div class="col-6 border">
             <div class="container break-word" id="message-container">
               <h6 class="text-center"> Message Container</h6>

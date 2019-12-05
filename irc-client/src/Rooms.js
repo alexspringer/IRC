@@ -41,6 +41,13 @@ class Rooms extends Component {
     this.state.socket.on("new-room", room => {
       this.appendRoom(room);
     });
+
+    this.state.socket.on("active-rooms", roomNameList =>{
+      let i = 0;
+      for (i = 0; i < roomNameList.length; i++) {
+        this.appendRoom(roomNameList[i]);
+      }
+    })
   }
 
   render() {

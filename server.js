@@ -13,7 +13,6 @@ const server = http.createServer(app);
 // This creates our socket using the instance of the server
 const io = socketIO(server);
 
-
 users = {};
 rooms = {};
 //room = {name: '', users}
@@ -22,40 +21,50 @@ rooms = {};
 io.on("connection", socket => {
   console.log("New client connected");
   var userList = Object.values(users);
-  socket.emit("active-users", userList);
-  var roomNameList= Object.entries(rooms);
-  console.log(roomNameList);
+  socket.emit("active-users", rooms);
 
+  var roomNameList = Object.keys(rooms);
+  socket.emit("active-rooms", roomNameList);
+
+  //server crashes when we reload in a chat room
+  //because we dont get the room variable if we dont
+  //click the anchor tag in the previous page.
   socket.on("new-user", data => {
     socket.join(data.room);
     rooms[data.room].users[socket.id] = data.name;
     socket.to(data.room).broadcast.emit("user-connected", data.name);
   });
 
-  socket.on("send-message", data =>{
-    socket.to(data.room).broadcast.emit("chat-message", {name: rooms[data.room].users[socket.id], message: data.message});
-  })
+  socket.on("send-message", data => {
+    socket
+      .to(data.room)
+      .broadcast.emit("chat-message", {
+        name: rooms[data.room].users[socket.id],
+        message: data.message
+      });
+  });
 
-  socket.on("send-room", room =>{
-    rooms[room] = {users:{}};
+  socket.on("send-room", room => {
+    rooms[room] = { users: {} };
     socket.broadcast.emit("new-room", room);
-  })
+  });
 
   socket.on("disconnect", () => {
     console.log("user disconnected");
-    getRooms(socket).forEach(room =>{
-
-    socket.to(room).broadcast.emit("user-disconnected", rooms[room].users[socket.id]);
-    delete rooms[room].users[socket.id];
-    })
+    getRooms(socket).forEach(room => {
+      socket
+        .to(room)
+        .broadcast.emit("user-disconnected", rooms[room].users[socket.id]);
+      delete rooms[room].users[socket.id];
+    });
   });
 });
 
-function getRooms(socket){
-  return Object.entries(rooms).reduce((names, [name, room]) =>{
-    if(room.users[socket.id] != null) names.push(name);
+function getRooms(socket) {
+  return Object.entries(rooms).reduce((names, [name, room]) => {
+    if (room.users[socket.id] != null) names.push(name);
     return names;
-  },[]);
+  }, []);
 }
 
 server.listen(port, () => console.log(`Listening on port ${port}`));
