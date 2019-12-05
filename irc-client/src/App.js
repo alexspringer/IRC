@@ -10,6 +10,7 @@ class App extends Component {
       socket: socketIOClient("http://localhost:4001")
     };
     this.handleSubmit = this.handleSubmit.bind(this);
+    this.handleNewRoom = this.handleNewRoom.bind(this);
   }
 
   handleSubmit(event) {
@@ -40,6 +41,33 @@ class App extends Component {
     userContainer.append(newUser);
   }
 
+  appendRoom(roomName) {
+    if(document.getElementById(roomName)) return;
+    const roomContainer = document.getElementById("room-container");
+    const newRoom = document.createElement("div");
+    const roomLink = document.createElement("a");
+    const roomRemove = document.createElement("button");
+    
+    roomRemove.innerText="X";
+    roomRemove.id=roomName;
+    //roomRemove.onclick=removeRoom(roomRemove.id);
+
+    newRoom.innerText = roomName;
+    newRoom.id = roomName;
+
+    roomLink.href=`/${roomName}`
+    roomLink.append(newRoom);
+
+    roomContainer.append(roomLink);
+    roomContainer.append(roomRemove);
+  }
+
+  /*removeRoom(){
+    var id = roomRemove.id;
+    var roomToRemove = document.getElementById(id);
+    roomToRemove.remove();
+  }*/
+
   //When a user disconnect, we emit the user who disconencted to the client.
   //We use that information to remove the user from the list of active users.
   removeUser(user) {
@@ -67,6 +95,15 @@ class App extends Component {
     socket.emit("new-user", name);
   }
 
+  handleNewRoom(event) {
+    event.preventDefault();
+    var roomInput = document.getElementById("room-input");
+    var roomName = roomInput.value;
+    this.appendRoom(roomName);
+    roomInput.value = "";
+    this.state.socket.emit("send-room", roomName);
+  }
+
   componentDidMount() {
     //const { endpoint } = this.state;
     //const socket = socketIOClient(endpoint);
@@ -75,6 +112,10 @@ class App extends Component {
     this.state.socket.on("chat-message", data => {
       this.appendMessage(`${data.name}: ${data.message}`);
     });
+
+    this.state.socket.on("new-room", room =>{
+      this.appendRoom(room);
+    })
 
     this.state.socket.on("user-connected", name => {
       this.appendMessage(`${name} connected.`);
@@ -90,13 +131,29 @@ class App extends Component {
     return (
       <div class="container">
         <div class="row justify-content-center">
-          <div class="col-3"></div>
-          <div class="col-6">
+          <div class="col-3">
+            <h6>Room Container</h6>
+            <div id="room-container"></div>
+            <form onSubmit={this.handleNewRoom}>
+              <div class="input-group">
+                <input
+                  class="form-control"
+                  type="text"
+                  id="room-input"
+                  name="room-input"
+                />
+                <div class="input-group-append">
+                  <button type="submit">Create</button>
+                </div>
+              </div>
+            </form>
+          </div>
+          <div class="col-6 border">
             <div class="container break-word" id="message-container">
               <h6 class="text-center"> Message Container</h6>
             </div>
           </div>
-          <div class="col-3">
+          <div class="col-3 border">
             <div class="container" id="user-container">
               <h6 class="text-center">User Container</h6>
             </div>
@@ -111,6 +168,7 @@ class App extends Component {
                   type="text"
                   id="message-input"
                   name="message-input"
+                  placeholder="Enter a message to chat."
                 />
                 <div class="input-group-append">
                   <button type="submit">Send</button>

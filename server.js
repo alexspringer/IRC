@@ -29,6 +29,10 @@ io.on("connection", socket => {
     socket.broadcast.emit("chat-message", {name: users[socket.id], message: message});
   })
 
+  socket.on("send-room", room =>{
+    socket.broadcast.emit("new-room", room);
+  })
+
   socket.on("disconnect", () => {
     console.log("user disconnected");
     socket.broadcast.emit("user-disconnected", users[socket.id]);
