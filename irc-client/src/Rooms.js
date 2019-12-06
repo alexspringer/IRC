@@ -17,13 +17,14 @@ class Rooms extends Component {
     event.preventDefault();
     const roomInput = document.getElementById("room-input");
     var room = roomInput.value;
-    this.appendRoom(room);
+    if (!document.getElementById(room)) {
+      this.appendRoom(room);
+      this.state.socket.emit("send-room", room);
+    }
     roomInput.value = "";
-    this.state.socket.emit("send-room", room);
   }
 
   appendRoom(room) {
-    if (document.getElementById(room)) return;
     const roomContainer = document.getElementById("room-container");
     const newRoom = document.createElement("div");
     const roomLink = document.createElement("a");
@@ -42,18 +43,18 @@ class Rooms extends Component {
       this.appendRoom(room);
     });
 
-    this.state.socket.on("active-rooms", roomNameList =>{
+    this.state.socket.on("active-rooms", roomNameList => {
       let i = 0;
       for (i = 0; i < roomNameList.length; i++) {
         this.appendRoom(roomNameList[i]);
       }
-    })
+    });
   }
 
   render() {
     return (
       <Router>
-        <div id ="room" class="container">
+        <div id="room" class="container">
           <div id="room-container" class="container"></div>
           <form onSubmit={this.handleSubmit}>
             <input
@@ -68,9 +69,9 @@ class Rooms extends Component {
           </form>
         </div>
         <Switch>
-            <Route path="/:room">
-                <Chat/>
-            </Route>
+          <Route path="/:room">
+            <Chat />
+          </Route>
         </Switch>
       </Router>
     );

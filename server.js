@@ -15,20 +15,14 @@ const io = socketIO(server);
 
 users = {};
 rooms = {};
-//room = {name: '', users}
-//rooms
 
 io.on("connection", socket => {
   console.log("New client connected");
-  var userList = Object.values(users);
   socket.emit("active-users", rooms);
 
   var roomNameList = Object.keys(rooms);
   socket.emit("active-rooms", roomNameList);
 
-  //server crashes when we reload in a chat room
-  //because we dont get the room variable if we dont
-  //click the anchor tag in the previous page.
   socket.on("new-user", data => {
     socket.join(data.room);
     rooms[data.room].users[socket.id] = data.name;

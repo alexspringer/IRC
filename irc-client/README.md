@@ -1,5 +1,52 @@
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
+## Server Modules Required
+
+To run the server the following modules must be installed.
+
+*Type 
+    npm install
+if npm has not been previously installed on the machine.
+
+express,
+nodemon,
+socket.io,
+socket.io-client,
+
+Type the following line into the terminal in the folder that contains server.js
+
+npm install express nodemon socket.io socket.io-client.
+
+## Client Modules Required
+
+To run the client the following modules must be installed:
+
+*Not npm must be installed by typing
+    npm install
+if not previously installed on in the irc-client folder.
+
+ bootstrap,
+ react,
+ react-dom,
+ react-router-dom,
+ react-scripts,
+ socket.io,
+ socket.io-client,
+
+ Type the following line into the terminal in the src folder to install these modules.
+
+npm install bootstrap react reac-dom react-router-dom react-scripts socket.io socket.io-client
+
+## Running the application.
+
+To run the server and client you will need to open two terminals.
+
+In the first terminal navigate to the folder that conbtains server.js and type nodemon server.js to run the server.
+
+In the second terminal navigate to the irc-client folder and type npm start to begin running the client application
+
+Boom now the server is running on localhost:4001 and the client is running on localhost:3000. Enjoy the app!
+
 ## Available Scripts
 
 In the project directory, you can run:

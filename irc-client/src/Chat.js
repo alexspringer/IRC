@@ -1,13 +1,6 @@
 import React, { Component } from "react";
 import socketIOClient from "socket.io-client";
 import "bootstrap/dist/css/bootstrap.min.css";
-import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
-  Link,
-  useParams
-} from "react-router-dom";
 
 class Chat extends Component {
   constructor() {
@@ -39,15 +32,14 @@ class Chat extends Component {
     messageContainer.append(newMessage);
   }
 
-  //Appends a user to the list of active users.
   appendUser(user) {
     if (document.getElementById(user) != null) {
-      return; //This user is already an active user.
+      return;
     }
     const userContainer = document.getElementById("user-container");
     const newUser = document.createElement("div");
     newUser.innerText = user;
-    newUser.id = user; //set the id to the user so we can easily remove when the user dc
+    newUser.id = user;
     userContainer.append(newUser);
   }
 
@@ -76,15 +68,6 @@ class Chat extends Component {
     this.state.socket.emit("new-user", { name: name, room: room });
   }
 
-  handleNewRoom(event) {
-    event.preventDefault();
-    var roomInput = document.getElementById("room-input");
-    var roomName = roomInput.value;
-    this.appendRoom(roomName);
-    roomInput.value = "";
-    this.state.socket.emit("send-room", roomName);
-  }
-
   componentDidMount() {
     var room = window.location.pathname;
     room = room.substr(1);
@@ -96,10 +79,6 @@ class Chat extends Component {
 
     this.state.socket.on("chat-message", data => {
       this.appendMessage(`${data.name}: ${data.message}`);
-    });
-
-    this.state.socket.on("new-room", room => {
-      this.appendRoom(room);
     });
 
     this.state.socket.on("user-connected", name => {
